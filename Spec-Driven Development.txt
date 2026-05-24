@@ -1,0 +1,111 @@
+
+Methodology
+Spec-Driven Development
+Transforming ad-hoc coding into a structured, iterative workflow where the specification is the core artifact.
+
+Introduction
+Spec-Driven Development (SDD) is a methodology that prioritizes the creation of precise, machine-readable specifications over immediate coding. As AI commoditizes code generation, the engineering bottleneck has shifted from writing syntax to defining intent. SDD addresses this by treating the specification as the primary source of truth from which code, tests, and documentation are derived.
+
+Its value lies in eliminating the "ambiguity tax"—the costly cycles of hallucination and rework caused by vague requirements. By front-loading clarity, SDD empowers developers to orchestrate complex systems with confidence, ensuring that the raw speed of AI is matched by the reliability of engineering rigor.
+
+The Core Philosophy
+Spec-Driven Development (SDD) acts as a bridge between human intent and AI execution. It integrates the strongest elements from established approaches—foundational guardrails, explicit clarification, and atomic task decomposition—to create a predictable process.
+
+By shifting the developer's role from "coder" to "architect and reviewer," SDD minimizes rework and leverages AI for the heavy lifting while maintaining strict human orchestration.
+
+The Workflow
+From constitution to maintenance: a six-phase cycle.
+
+0
+Constitution (Setup Guardrails)
+constitution.md
+Establish persistent project principles (tech stack, coding standards, security rules) that serve as the immutable context for all AI operations.
+
+Checkpoint:
+Initial team alignment on rules.
+1
+Specify (Define What & Why)
+specification.md
+Capture unambiguous requirements including user stories, acceptance criteria, and constraints. Focus on intent, not technical implementation details.
+
+Checkpoint:
+Product/Stakeholder review for clarity and completeness.
+2
+Clarify (Remove Ambiguity)
+Run a structured pass to surface underspecified areas—edge cases, empty states, and error handling—recording answers in the spec before moving forward.
+
+Checkpoint:
+Developer verification to minimize downstream rework.
+3
+Plan (Technical Blueprint)
+plan.md
+Translate intent into a feasible technical approach: architecture decisions, data models, API contracts, and dependencies.
+
+Checkpoint:
+Architectural review for soundness and risk avoidance.
+4
+Tasks (Atomic Decomposition)
+tasks.md
+Break work into small, testable, isolated chunks scoped for single PRs (1-4 hours each). Order by dependencies.
+
+Checkpoint:
+Scope/order review for logical flow.
+5-6
+Implement & Iterate
+AI generates code and tests from the spec/plan slices. Humans validate against the spec. Post-merge, any changes start by revising the spec first.
+
+Tests are embedded in specs from the start.
+Commit only when validated by AI and Human.
+Treat specs as version-controlled code.
+Key Tenets
+Specification as Truth
+Begin with a comprehensive specification that captures the "what" and "why" from the user's perspective. Treat it as a living contract and executable blueprint that AI agents use to generate and validate code, ensuring intent and implementation stay synchronized.
+
+Upfront Clarity & Rigor
+Provide unambiguous details in the spec, covering business rules, edge cases, non-functional requirements, and architectural planning. This outlines the technology stack and integration points upfront to align with existing systems.
+
+Persistent Context
+Maintain the specification as a single, evolving source of truth across development sessions to ensure consistency. It serves as the persistent communication tool between stakeholders, designers, and developers.
+
+Test-Driven Guardrails
+Derive automated tests and clear acceptance criteria directly from the specification. This validates outputs continuously, catching issues early in a manner inspired by TDD, BDD, and Design by Contract.
+
+System Integration
+Explicitly define integration points, architectural patterns, and constraints in the spec. This ensures seamless alignment with current infrastructure, avoiding conflicts and promoting secure, efficient development.
+
+Living Specifications
+Treat specs as dynamic artifacts that update iteratively with new insights and feedback—both pre- and post-implementation. This minimizes misunderstandings, reduces rework, and supports ongoing maintenance.
+
+Structured Organization
+Employ dedicated structures, constitutions, or guiding principles to enforce consistency. This provides persistent rules for AI-generated artifacts and facilitates clearer collaboration.
+
+Systematic Decomposition
+Break complex features into small, atomic, testable tasks with tight scoping. This enables predictable AI code generation and continuous validation against the spec's criteria.
+
+Human Orchestration
+Shift the developer's role from coding to orchestration and review. Incorporate checkpoints to critique specs, plans, and AI outputs for correctness, security, and alignment with intent.
+
+Explicitness
+Emphasize high specificity in specs to drive secure, efficient workflows. Decisions made early guide the process, balancing against anti-patterns like skipping planning.
+
+Executable Intent
+Design specifications to be inherently executable by AI tools. This enables direct code generation and validation, evolving traditional development roles in AI-assisted environments.
+
+Iterative Refinement
+Incorporate feedback loops for spec evolution before implementation begins. Drawing from related methodologies helps catch ambiguities early and promotes a flexible yet rigorous pre-code phase.
+
+Comparison: SDD vs. Vibe Coding
+Aspect	Vibe Coding	Spec-Driven Development
+Definition	Exploratory, natural language prompts based on "vibes" or high-level ideas.	Structured methodology with detailed, executable specifications as the source of truth.
+Process	Ad-hoc prompting; quick iterations; relies on AI intuition.	Phased workflow (Specify -> Clarify -> Plan -> Tasks) with upfront rigor.
+Strengths	Fast for prototypes; low barrier to entry; creative.	Reliable for complex projects; reduces ambiguity; ensures alignment with intent.
+Weaknesses	Prone to hallucinations, context loss, and brittle code.	More upfront time required; can feel rigid for small hacks.
+AI Role	Primary generator; handles most work with loose guidance.	Executor of well-defined tasks; Human orchestrates, AI generates.
+How the Tools Work
+1
+Initialization
+SDD tools operate by transforming user intents into machine-readable specs. They scan existing repositories for interfaces and patterns, then reference the constitution.md to generate user stories and acceptance criteria. This upfront analysis minimizes ambiguity before a single line of code is written.
+
+2
+Execution
+Once specs are solid, the tools use AI to produce code, tests, and documentation derived directly from the artifacts. The specs act as living metadata—updating a spec triggers regeneration of affected code. This enables automated consistency checks and contract testing, abstracting away the pitfalls of ad-hoc generation.
