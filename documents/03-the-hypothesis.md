@@ -36,6 +36,9 @@ Improvements to agent capability at the implementation, state, or infrastructure
 **Corollary C — Autonomy without the hierarchy is a liability.**
 Increasing agent autonomy in systems without a formal hierarchy will produce faster accumulation of silent errors, not faster correct delivery. Speed of output is not correlated with correctness of output in the absence of the membrane.
 
+**Corollary D — Partial contracts are worse than no contracts on uncovered cases.**
+A contract suite that encodes only a subset of the required behaviors produces a narrower solution space than no contracts, but the wrong one. Agents satisfying partial contracts implement the minimum required by the stated cases and omit behaviors not tested. The resulting implementations are less correct on the uncovered cases than implementations produced with no contracts at all, because agents without constraints apply their full prior training on canonical implementations of the same task. Partial contracts do not compress the solution space toward correctness — they compress it toward the visible cases only, leaving the invisible cases unresolved and more variable. The implication is that contract coverage must be treated as a first-class quality dimension: an incomplete contract suite that gives agents false confidence the specification is exhaustive is actively harmful, not merely incomplete.
+
 ---
 
 ### 3.3 What Would Falsify This

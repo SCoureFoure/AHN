@@ -34,6 +34,13 @@ If E1 produces the predicted result (Arm A divergence > Arm B divergence on ambi
 - Fixed in `.claude/settings.json`: changed to `python .claude_hooks/log_edit.py`. Takes effect next session.
 - Impact: telemetry was effectively disabled even when `AHNLAB_TELEMETRY=1` (script not found → exit 1).
 
+## Deviation 6 — hook path fix went wrong direction (found in session after Deviation 5)
+
+- Deviation 5 diagnosed hook cwd as `lab/` and changed `python lab/.claude_hooks/log_edit.py` → `python .claude_hooks/log_edit.py`.
+- Diagnosis was wrong. Actual cwd = repo root. Error: `can't open file 'AHN\.claude_hooks\log_edit.py'` confirms root-relative resolution.
+- `SessionStart` hook correctly uses `python lab/.claude_hooks/session_start.py` — PostToolUse needed the same prefix.
+- Fixed: reverted to `python lab/.claude_hooks/log_edit.py`. Takes effect next session (hook config cached at session start).
+
 ## Cleanup path
 
 After E1 produces first data, prioritized cleanup:

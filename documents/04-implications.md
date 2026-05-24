@@ -81,4 +81,4 @@ What is new is the framing: that this hierarchy is not merely a best practice fo
 
 ---
 
-*Theoretical framework developed from first principles. Intended as a foundation document for agentic development practice. Case studies and empirical validation to follow.*
+*Theoretical framework developed from first principles. Intended as a foundation document for agentic development practice. Initial empirical validation is ongoing in the companion lab (`lab/`). First results from experiment E1 (interpretation variance across arms with and without contracts) are recorded in `lab/docs/findings-E1.md` and are consistent with Corollaries B and D.*
