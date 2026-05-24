@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python lab/.claude_hooks/log_edit.py"
+            "command": "python .claude_hooks/log_edit.py"
           }
         ]
       }

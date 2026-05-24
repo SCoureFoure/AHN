@@ -40,16 +40,18 @@ def run_suite(
     with tempfile.TemporaryDirectory() as tmpd:
         tmp = Path(tmpd)
         shutil.copy(artifacts_dir / "solution.py", tmp / "solution.py")
+        copied_suite_files = []
         for sf in suite_files:
-            shutil.copy(sf, tmp / Path(sf).name)
+            dest = tmp / Path(sf).name
+            shutil.copy(sf, dest)
+            copied_suite_files.append(str(dest))
         report_path = tmp / "_report.json"
 
         cmd = [
             sys.executable, "-m", "pytest",
             "--json-report", f"--json-report-file={report_path}",
             "-q", "--no-header", "--tb=short",
-            str(tmp),
-        ]
+        ] + copied_suite_files
         try:
             subprocess.run(
                 cmd, cwd=tmp, capture_output=True, text=True,

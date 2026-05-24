@@ -1,6 +1,6 @@
 # BUILDLOG — bootstrap exceptions
 
-The framework says intent originates from a human and contracts precede implementation. This lab was built in co-authorship between a human and an agent under explicit time pressure for v1. The following deviations are recorded here so the lab's own results can later be examined against the conditions under which it was produced.
+The framework says intent originates from a human and contracts precede implementation. This lab was built in co-authorship between a human and an agent(or agents) under explicit time pressure for v1. The following deviations are recorded here so the lab's own results can later be examined against the conditions under which it was produced.
 
 ## Deviation 1 — Co-drafted intent and requirements
 
@@ -20,6 +20,19 @@ The framework says intent originates from a human and contracts precede implemen
 ## What this means for E1 results
 
 If E1 produces the predicted result (Arm A divergence > Arm B divergence on ambiguous subjects), the deviation is harmless — the lab still produced a falsifiable measurement. If E1 produces the null or inverse result, the deviation joins the candidate explanation set alongside genuine theoretical refutation. It does not, by itself, refute the framework.
+
+## Deviation 4 — membrane.py pytest discovery bug (found during E1 pilot)
+
+- `membrane.run_suite` passed the temp directory to pytest rather than explicit file paths.
+- pytest only auto-discovers files matching `test_*.py` / `*_test.py`; hidden suite files (`is_prime_hidden.py`, `contracts.py`) do not match → 0 tests collected → all trials scored 0/1 passed.
+- Fixed in `src/ahnlab/membrane.py`: now passes explicit copied file paths to pytest instead of the directory.
+- Affected: all 18 pilot trials (seeds 1–3, both arms, all subjects). Re-run after fix produced plausible results.
+
+## Deviation 5 — hook path wrong in settings.json
+
+- `PostToolUse` hook command was `python lab/.claude_hooks/log_edit.py`; hook cwd = `lab/` (because `lab/.claude/` makes `lab/` the nested project root for lab files), so path doubled to `lab/lab/.claude_hooks/log_edit.py`.
+- Fixed in `.claude/settings.json`: changed to `python .claude_hooks/log_edit.py`. Takes effect next session.
+- Impact: telemetry was effectively disabled even when `AHNLAB_TELEMETRY=1` (script not found → exit 1).
 
 ## Cleanup path
 
