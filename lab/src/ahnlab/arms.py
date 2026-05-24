@@ -47,6 +47,15 @@ def execute(
         intent_text = intent_path.read_text(encoding="utf-8")
 
         for arm in spec.arms:
+            # Resolve contract files for this arm: explicit list takes priority over glob.
+            if arm.include_contracts:
+                if arm.contract_filenames:
+                    arm_contract_files = [subject_dir / fn for fn in arm.contract_filenames]
+                else:
+                    arm_contract_files = contract_files
+            else:
+                arm_contract_files = []
+
             existing = {(r["run_id"]) for r in store.runs_for(spec.experiment_id, arm.arm_id, subject)}
             done_count = len(existing)
             for seed in spec.seed_schedule[:spec.trials_per_arm]:
@@ -61,7 +70,7 @@ def execute(
                     subject=subject,
                     intent_text=intent_text,
                     model=spec.model,
-                    contract_files=contract_files if arm.include_contracts else [],
+                    contract_files=arm_contract_files,
                 )
                 console.print(f"[cyan]run[/] exp={spec.experiment_id} arm={arm.arm_id} subj={subject} seed={seed}")
                 try:

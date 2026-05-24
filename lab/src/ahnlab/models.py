@@ -79,6 +79,8 @@ class ArmSpec(BaseModel):
     arm_id: str
     description: str
     include_contracts: bool
+    contract_filenames: list[str] = Field(default_factory=list)
+    """Explicit contract filenames (relative to subject dir). If empty and include_contracts=True, falls back to glob contracts*.py."""
 
 
 class ExperimentSpec(BaseModel):

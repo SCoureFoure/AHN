@@ -34,12 +34,20 @@ If E1 produces the predicted result (Arm A divergence > Arm B divergence on ambi
 - Fixed in `.claude/settings.json`: changed to `python .claude_hooks/log_edit.py`. Takes effect next session.
 - Impact: telemetry was effectively disabled even when `AHNLAB_TELEMETRY=1` (script not found → exit 1).
 
-## Deviation 6 — hook path fix went wrong direction (found in session after Deviation 5)
+## Deviation 6 — hook cwd is file-dependent, not fixed (root cause of Deviations 5–6 confusion)
 
-- Deviation 5 diagnosed hook cwd as `lab/` and changed `python lab/.claude_hooks/log_edit.py` → `python .claude_hooks/log_edit.py`.
-- Diagnosis was wrong. Actual cwd = repo root. Error: `can't open file 'AHN\.claude_hooks\log_edit.py'` confirms root-relative resolution.
-- `SessionStart` hook correctly uses `python lab/.claude_hooks/session_start.py` — PostToolUse needed the same prefix.
-- Fixed: reverted to `python lab/.claude_hooks/log_edit.py`. Takes effect next session (hook config cached at session start).
+- Root cause: hook cwd is determined by the nearest `.claude/` directory above the edited file. Files in `lab/` use cwd=`lab/`; files in repo root use cwd=repo root.
+- Deviation 5 was therefore correct for lab files but wrong for repo-root files.
+- The "revert" in Deviation 6 was based on a repo-root edit error (`AHN\.claude_hooks\`) but should not have been applied globally.
+- Final resolution: settings.json uses `python .claude_hooks/log_edit.py` (works from cwd=`lab/` → resolves to `lab/.claude_hooks/log_edit.py`). A stub at `AHN\.claude_hooks\log_edit.py` handles the repo-root case (same command, different cwd → still exits 0).
+- Session-cache stubs created at `AHN\.claude_hooks\log_edit.py` and `AHN\lab\lab\.claude_hooks\log_edit.py` for in-flight sessions.
+- Fix takes effect next session.
+
+## Deviation 7 — E2 harness extension: per-arm contract files
+
+- E2 requires different contract files per arm (contracts_B.py, contracts_C.py, contracts_D.py). The existing `ArmSpec` only supported `include_contracts: bool` with a glob fallback (`contracts*.py`).
+- Extended `ArmSpec` with `contract_filenames: list[str] = []`. If non-empty and `include_contracts=True`, those specific filenames (relative to subject dir) are used instead of the glob. Backward-compatible — E1 arms use empty list and fall back to glob.
+- Change in `lab/src/ahnlab/models.py` and `lab/src/ahnlab/arms.py`. Not preceded by a contract on the harness itself (consistent with existing Deviations 2–3).
 
 ## Cleanup path
 
