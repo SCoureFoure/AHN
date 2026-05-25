@@ -49,6 +49,8 @@ class RunRecord(BaseModel):
     prompt_hash: str
     lab_git_sha: str | None = None
     lockfile_hash: str | None = None
+    cycle_num: int = 0
+    chain_id: str | None = None
 
 
 class ContractResult(BaseModel):
@@ -73,6 +75,52 @@ class MembraneReport(BaseModel):
     def pass_vector(self) -> list[int]:
         """Ordered 1/0 vector of pass/fail per test, sorted by name."""
         return [1 if r.status == "passed" else 0 for r in sorted(self.results, key=lambda x: x.name)]
+
+
+class CycleSpec(BaseModel):
+    """Definition of one cycle in a multi-cycle experiment."""
+    cycle_num: int
+    intent_path: Path
+    seed_path: Path
+    contract_path: Path | None = None
+    hidden_paths: list[Path] = Field(default_factory=list)
+
+
+class MultiCycleArmSpec(BaseModel):
+    arm_id: str
+    description: str
+    include_contracts: bool
+
+
+class MultiCycleExperimentSpec(BaseModel):
+    experiment_id: str
+    description: str
+    subject: str
+    arms: list[MultiCycleArmSpec]
+    cycles: list[CycleSpec]
+    trials_per_arm: int
+    model: str
+    seed_schedule: list[int]
+
+
+class MultiFileCycleSpec(BaseModel):
+    """One cycle in a multi-file experiment — seed is a directory of .py files."""
+    cycle_num: int
+    intent_path: Path
+    seed_dir: Path
+    contract_path: Path | None = None
+    hidden_paths: list[Path] = Field(default_factory=list)
+
+
+class MultiFileExperimentSpec(BaseModel):
+    experiment_id: str
+    description: str
+    subject: str
+    arms: list[MultiCycleArmSpec]
+    cycles: list[MultiFileCycleSpec]
+    trials_per_arm: int
+    model: str
+    seed_schedule: list[int]
 
 
 class ArmSpec(BaseModel):

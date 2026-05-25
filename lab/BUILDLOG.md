@@ -49,6 +49,20 @@ If E1 produces the predicted result (Arm A divergence > Arm B divergence on ambi
 - Extended `ArmSpec` with `contract_filenames: list[str] = []`. If non-empty and `include_contracts=True`, those specific filenames (relative to subject dir) are used instead of the glob. Backward-compatible — E1 arms use empty list and fall back to glob.
 - Change in `lab/src/ahnlab/models.py` and `lab/src/ahnlab/arms.py`. Not preceded by a contract on the harness itself (consistent with existing Deviations 2–3).
 
+## Deviation 8 — Multi-file membrane bug (found during E3b pilot)
+
+- `execute_multi_file_cycles` in `cycle_runner.py` merged `prior_files` correctly for the next cycle's prompt, but only files the agent actually emitted were written to `rec.artifacts_dir`. When agent only modified `operations.py`, `models.py` was absent from artifacts dir → membrane temp dir missing `models.py` → `from models import Task` ImportError → 0/1 collection error.
+- Observed as A_free c3 = 0.000 in first E3b pilot run (all 10 trials). B_hierarchy c3 was 14/14 (mostly) because contracts apparently guided the agent to emit both files more often — or by chance.
+- Fixed in `cycle_runner.py`: after merging `prior_files`, write any files not already in `artifacts_dir` before calling `run_suite`.
+- Affected: first E3b pilot (10 trials per arm). Data cleared and re-run after fix.
+
+## Deviation 9 — E3b null result (2026-05-24)
+
+- E3b (multi-file todo_app subject) produced identical pass rates for A_free and B_hierarchy across all 4 cycles: c1=0.875, c2=0.923, c3=1.000, c4=1.000.
+- Falsification condition met: A_free maintained equivalent high pass rate. Multi-file compounding regression not measurable for Haiku 4.5 at this complexity level.
+- Both E3 (single-file) and E3b (multi-file) show the same pattern: model too capable at single-feature-per-cycle incremental additions. Contracts don't differentiate because the task doesn't stress the agent's ability to maintain invariants.
+- Implication: compounding effect requires subjects where feature cycles create genuine cross-constraint tension — multiple invariants that can conflict. Simple additive features (add method, filter method, remove method) don't stress this.
+
 ## Cleanup path
 
 After E1 produces first data, prioritized cleanup:

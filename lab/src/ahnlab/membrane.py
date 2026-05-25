@@ -25,8 +25,11 @@ def run_suite(
     """
     started = time.time()
 
-    if not (artifacts_dir / "solution.py").exists():
-        # No solution emitted — every test is an error.
+    solution_py = artifacts_dir / "solution.py"
+    artifact_pys = [p for p in artifacts_dir.glob("*.py") if p.name != "__init__.py"]
+    is_multi_file = not solution_py.exists() and len(artifact_pys) > 0
+
+    if not solution_py.exists() and not is_multi_file:
         results = [
             ContractResult(name=str(sf), status="error", duration_s=0.0, message="missing solution.py")
             for sf in suite_files
@@ -39,7 +42,11 @@ def run_suite(
 
     with tempfile.TemporaryDirectory() as tmpd:
         tmp = Path(tmpd)
-        shutil.copy(artifacts_dir / "solution.py", tmp / "solution.py")
+        if is_multi_file:
+            for p in artifact_pys:
+                shutil.copy(p, tmp / p.name)
+        else:
+            shutil.copy(solution_py, tmp / "solution.py")
         copied_suite_files = []
         for sf in suite_files:
             dest = tmp / Path(sf).name

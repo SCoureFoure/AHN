@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .config import SUBJECTS_ROOT
-from .models import ArmSpec, ExperimentSpec
+from .models import ArmSpec, CycleSpec, ExperimentSpec, MultiCycleArmSpec, MultiCycleExperimentSpec, MultiFileCycleSpec, MultiFileExperimentSpec
 
 
 DEFAULT_MODEL = "claude-haiku-4-5-20251001"
@@ -154,9 +154,73 @@ def e2c_paths() -> Path:
     return SUBJECTS_ROOT
 
 
+def e3_spec(trials_per_arm: int = 10, model: str = DEFAULT_MODEL) -> MultiCycleExperimentSpec:
+    todo = SUBJECTS_ROOT / "todo_list"
+    cycles = [
+        CycleSpec(
+            cycle_num=n,
+            intent_path=todo / "cycles" / f"c{n}" / "intent.md",
+            seed_path=todo / "seeds" / f"c{n}_seed.py",
+            contract_path=todo / "cycles" / f"c{n}" / "contracts.py",
+            hidden_paths=sorted((todo / "hidden").glob(f"hidden_c{n}.py")),
+        )
+        for n in range(1, 5)
+    ]
+    return MultiCycleExperimentSpec(
+        experiment_id="E3",
+        description="Compounding regression — hierarchy-first vs free-edit across 4 feature cycles on todo_list.",
+        subject="todo_list",
+        arms=[
+            MultiCycleArmSpec(arm_id="A_free", description="No contracts at any cycle.", include_contracts=False),
+            MultiCycleArmSpec(arm_id="B_hierarchy", description="Cumulative contracts at each cycle.", include_contracts=True),
+        ],
+        cycles=cycles,
+        trials_per_arm=trials_per_arm,
+        model=model,
+        seed_schedule=list(range(1, trials_per_arm + 1)),
+    )
+
+
+def e3_paths() -> Path:
+    return SUBJECTS_ROOT
+
+
+def e3b_spec(trials_per_arm: int = 10, model: str = DEFAULT_MODEL) -> MultiFileExperimentSpec:
+    todo = SUBJECTS_ROOT / "todo_app"
+    cycles = [
+        MultiFileCycleSpec(
+            cycle_num=n,
+            intent_path=todo / "cycles" / f"c{n}" / "intent.md",
+            seed_dir=todo / "seeds" / f"c{n}",
+            contract_path=todo / "cycles" / f"c{n}" / "contracts.py",
+            hidden_paths=sorted((todo / "hidden").glob(f"hidden_c{n}.py")),
+        )
+        for n in range(1, 5)
+    ]
+    return MultiFileExperimentSpec(
+        experiment_id="E3b",
+        description="Multi-file compounding regression — hierarchy-first vs free-edit across 4 feature cycles on todo_app.",
+        subject="todo_app",
+        arms=[
+            MultiCycleArmSpec(arm_id="A_free", description="No contracts at any cycle.", include_contracts=False),
+            MultiCycleArmSpec(arm_id="B_hierarchy", description="Cumulative contracts at each cycle.", include_contracts=True),
+        ],
+        cycles=cycles,
+        trials_per_arm=trials_per_arm,
+        model=model,
+        seed_schedule=list(range(1, trials_per_arm + 1)),
+    )
+
+
+def e3b_paths() -> Path:
+    return SUBJECTS_ROOT
+
+
 REGISTRY = {
     "E1": (e1_spec, e1_paths),
     "E2": (e2_spec, e2_paths),
     "E2b": (e2b_spec, e2b_paths),
     "E2c": (e2c_spec, e2c_paths),
+    "E3": (e3_spec, e3_paths),
+    "E3b": (e3b_spec, e3b_paths),
 }

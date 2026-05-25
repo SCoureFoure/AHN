@@ -9,8 +9,10 @@ from rich.table import Table
 
 from .arms import execute
 from .config import DB_PATH, ANTHROPIC_API_KEY, ensure_dirs
+from .cycle_runner import execute_cycles, execute_multi_file_cycles
 from .experiments import REGISTRY
 from .metrics import mean_pairwise_hamming, pass_rate
+from .models import MultiCycleExperimentSpec, MultiFileExperimentSpec
 from .store import Store
 
 
@@ -39,21 +41,30 @@ def cmd_run(args: argparse.Namespace) -> int:
     ensure_dirs()
     store = Store()
     try:
-        execute(spec, subjects_root, store)
+        if isinstance(spec, MultiFileExperimentSpec):
+            execute_multi_file_cycles(spec, subjects_root, store)
+        elif isinstance(spec, MultiCycleExperimentSpec):
+            execute_cycles(spec, subjects_root, store)
+        else:
+            execute(spec, subjects_root, store)
     finally:
         store.close()
 
-    # Exit non-zero if any arm fell short of its trial count.
     store = Store()
     try:
-        for arm in spec.arms:
-            for subject in spec.subjects:
-                count = store.count_runs(spec.experiment_id, arm.arm_id, subject)
+        if isinstance(spec, (MultiCycleExperimentSpec, MultiFileExperimentSpec)):
+            for arm in spec.arms:
+                count = store.count_chains(spec.experiment_id, arm.arm_id, spec.subject)
                 if count < spec.trials_per_arm:
-                    console.print(
-                        f"[yellow]arm under-trialled[/] {arm.arm_id} subj={subject}: {count}/{spec.trials_per_arm}"
-                    )
+                    console.print(f"[yellow]arm under-trialled[/] {arm.arm_id}: {count}/{spec.trials_per_arm} chains")
                     return 1
+        else:
+            for arm in spec.arms:
+                for subject in spec.subjects:
+                    count = store.count_runs(spec.experiment_id, arm.arm_id, subject)
+                    if count < spec.trials_per_arm:
+                        console.print(f"[yellow]arm under-trialled[/] {arm.arm_id} subj={subject}: {count}/{spec.trials_per_arm}")
+                        return 1
     finally:
         store.close()
     return 0
@@ -67,27 +78,45 @@ def cmd_report(args: argparse.Namespace) -> int:
     spec = spec_fn()
 
     store = Store()
-    table = Table(title=f"{args.experiment} — divergence + pass rate per (arm, subject)")
-    table.add_column("subject")
-    table.add_column("arm")
-    table.add_column("n", justify="right")
-    table.add_column("mean pairwise hamming", justify="right")
-    table.add_column("hidden pass rate", justify="right")
-    table.add_column("cost $", justify="right")
-
     try:
-        for subject in spec.subjects:
+        if isinstance(spec, (MultiCycleExperimentSpec, MultiFileExperimentSpec)):
+            table = Table(title=f"{args.experiment} — hidden pass rate per (arm, cycle)")
+            table.add_column("arm")
+            table.add_column("cycle", justify="right")
+            table.add_column("n", justify="right")
+            table.add_column("hidden pass rate", justify="right")
+            table.add_column("cost $", justify="right")
             for arm in spec.arms:
-                vectors = store.pass_vectors(spec.experiment_id, arm.arm_id, subject, "hidden")
-                n = len(vectors)
-                div = mean_pairwise_hamming(vectors) if n >= 2 else 0.0
-                pr = pass_rate(vectors)
-                cost_row = store.con.execute(
-                    "SELECT COALESCE(SUM(cost_usd), 0) FROM runs WHERE experiment_id=? AND arm_id=? AND subject=?",
-                    [spec.experiment_id, arm.arm_id, subject],
-                ).fetchone()
-                cost = float(cost_row[0]) if cost_row else 0.0
-                table.add_row(subject, arm.arm_id, str(n), f"{div:.3f}", f"{pr:.3f}", f"{cost:.4f}")
+                for cycle in spec.cycles:
+                    vectors = store.pass_vectors_by_cycle(spec.experiment_id, arm.arm_id, spec.subject, cycle.cycle_num)
+                    n = len(vectors)
+                    pr = pass_rate(vectors)
+                    cost_row = store.con.execute(
+                        "SELECT COALESCE(SUM(cost_usd), 0) FROM runs WHERE experiment_id=? AND arm_id=? AND cycle_num=?",
+                        [spec.experiment_id, arm.arm_id, cycle.cycle_num],
+                    ).fetchone()
+                    cost = float(cost_row[0]) if cost_row else 0.0
+                    table.add_row(arm.arm_id, f"c{cycle.cycle_num}", str(n), f"{pr:.3f}", f"{cost:.4f}")
+        else:
+            table = Table(title=f"{args.experiment} — divergence + pass rate per (arm, subject)")
+            table.add_column("subject")
+            table.add_column("arm")
+            table.add_column("n", justify="right")
+            table.add_column("mean pairwise hamming", justify="right")
+            table.add_column("hidden pass rate", justify="right")
+            table.add_column("cost $", justify="right")
+            for subject in spec.subjects:
+                for arm in spec.arms:
+                    vectors = store.pass_vectors(spec.experiment_id, arm.arm_id, subject, "hidden")
+                    n = len(vectors)
+                    div = mean_pairwise_hamming(vectors) if n >= 2 else 0.0
+                    pr = pass_rate(vectors)
+                    cost_row = store.con.execute(
+                        "SELECT COALESCE(SUM(cost_usd), 0) FROM runs WHERE experiment_id=? AND arm_id=? AND subject=?",
+                        [spec.experiment_id, arm.arm_id, subject],
+                    ).fetchone()
+                    cost = float(cost_row[0]) if cost_row else 0.0
+                    table.add_row(subject, arm.arm_id, str(n), f"{div:.3f}", f"{pr:.3f}", f"{cost:.4f}")
     finally:
         store.close()
 
