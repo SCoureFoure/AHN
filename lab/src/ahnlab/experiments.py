@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .config import LAB_ROOT
+from .config import SUBJECTS_ROOT
 from .models import ArmSpec, ExperimentSpec
 
 
@@ -25,11 +25,8 @@ def e1_spec(trials_per_arm: int = 30, model: str = DEFAULT_MODEL) -> ExperimentS
     )
 
 
-def e1_paths() -> tuple[Path, Path]:
-    return (
-        LAB_ROOT / "experiments" / "E1" / "subjects",
-        LAB_ROOT / "experiments" / "E1" / "hidden",
-    )
+def e1_paths() -> Path:
+    return SUBJECTS_ROOT
 
 
 def e2_spec(trials_per_arm: int = 100, model: str = DEFAULT_MODEL) -> ExperimentSpec:
@@ -68,14 +65,98 @@ def e2_spec(trials_per_arm: int = 100, model: str = DEFAULT_MODEL) -> Experiment
     )
 
 
-def e2_paths() -> tuple[Path, Path]:
-    return (
-        LAB_ROOT / "experiments" / "E2" / "subjects",
-        LAB_ROOT / "experiments" / "E2" / "hidden",
+def e2_paths() -> Path:
+    return SUBJECTS_ROOT
+
+
+def e2b_spec(trials_per_arm: int = 30, model: str = DEFAULT_MODEL) -> ExperimentSpec:
+    # E2 family: contract completeness extension probing C_partial_warn mechanism
+    # and B_partial inversion on a wrong-default subject. Subject validation failed
+    # (A_zero=1.000) — group_by_prefix not a wrong-default task for Haiku 4.5.
+    return ExperimentSpec(
+        experiment_id="E2b",
+        description="E2 extension — contract completeness on group_by_prefix (subject failed A_zero validation: too capable).",
+        subjects=["group_by_prefix"],
+        arms=[
+            ArmSpec(
+                arm_id="A_zero",
+                description="Intent only, no contracts.",
+                include_contracts=False,
+            ),
+            ArmSpec(
+                arm_id="B_partial",
+                description="Intent + 2 basic AEs (happy path only).",
+                include_contracts=True,
+                contract_filenames=["contracts_B.py"],
+            ),
+            ArmSpec(
+                arm_id="C_partial_warn",
+                description="Intent + 2 basic AEs + explicit incompleteness warning.",
+                include_contracts=True,
+                contract_filenames=["contracts_C.py"],
+            ),
+            ArmSpec(
+                arm_id="D_full",
+                description="Intent + all 9 acceptance examples (full edge-case coverage).",
+                include_contracts=True,
+                contract_filenames=["contracts_D.py"],
+            ),
+        ],
+        trials_per_arm=trials_per_arm,
+        model=model,
+        seed_schedule=list(range(1, trials_per_arm + 1)),
     )
+
+
+def e2b_paths() -> Path:
+    return SUBJECTS_ROOT
+
+
+def e2c_spec(trials_per_arm: int = 30, model: str = DEFAULT_MODEL) -> ExperimentSpec:
+    # E2 family: alternate wrong-default subject. Subject validation also failed
+    # (A_zero=1.000) — invert_index not a wrong-default task for Haiku 4.5 either.
+    return ExperimentSpec(
+        experiment_id="E2c",
+        description="E2 extension — contract completeness on invert_index (subject failed A_zero validation: too capable).",
+        subjects=["invert_index"],
+        arms=[
+            ArmSpec(
+                arm_id="A_zero",
+                description="Intent only, no contracts.",
+                include_contracts=False,
+            ),
+            ArmSpec(
+                arm_id="B_partial",
+                description="Intent + 2 basic AEs (happy path only).",
+                include_contracts=True,
+                contract_filenames=["contracts_B.py"],
+            ),
+            ArmSpec(
+                arm_id="C_partial_warn",
+                description="Intent + 2 basic AEs + explicit incompleteness warning.",
+                include_contracts=True,
+                contract_filenames=["contracts_C.py"],
+            ),
+            ArmSpec(
+                arm_id="D_full",
+                description="Intent + all 9 acceptance examples (full edge-case coverage).",
+                include_contracts=True,
+                contract_filenames=["contracts_D.py"],
+            ),
+        ],
+        trials_per_arm=trials_per_arm,
+        model=model,
+        seed_schedule=list(range(1, trials_per_arm + 1)),
+    )
+
+
+def e2c_paths() -> Path:
+    return SUBJECTS_ROOT
 
 
 REGISTRY = {
     "E1": (e1_spec, e1_paths),
     "E2": (e2_spec, e2_paths),
+    "E2b": (e2b_spec, e2b_paths),
+    "E2c": (e2c_spec, e2c_paths),
 }

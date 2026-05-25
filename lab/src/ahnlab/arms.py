@@ -20,7 +20,6 @@ console = Console()
 def execute(
     spec: ExperimentSpec,
     subjects_root: Path,
-    hidden_root: Path,
     store: Store,
 ) -> None:
     """Run every (arm, subject, seed) trial that hasn't completed yet.
@@ -40,7 +39,7 @@ def execute(
         subject_dir = subjects_root / subject
         intent_path = subject_dir / "intent.md"
         contract_files = sorted(subject_dir.glob("contracts*.py"))
-        hidden_files = sorted(hidden_root.glob(f"{subject}_hidden*.py"))
+        hidden_files = sorted((subject_dir / "hidden").glob(f"{subject}_hidden*.py"))
         if not intent_path.exists():
             console.print(f"[yellow]skip subject {subject}: missing intent.md[/]")
             continue

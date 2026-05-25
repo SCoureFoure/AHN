@@ -1,0 +1,81 @@
+import pytest
+from solution import TodoList
+
+
+# --- cycle 1 ---
+
+def test_add_and_list():
+    t = TodoList()
+    t.add("buy milk")
+    assert t.list_items() == ["buy milk"]
+
+
+def test_insertion_order():
+    t = TodoList()
+    t.add("b"); t.add("a")
+    assert t.list_items() == ["b", "a"]
+
+
+def test_empty():
+    assert TodoList().list_items() == []
+
+
+# --- cycle 2 ---
+
+def test_complete_moves_to_done():
+    t = TodoList()
+    t.add("a"); t.add("b")
+    t.complete("a")
+    assert t.pending() == ["b"]
+    assert t.done_items() == ["a"]
+
+
+def test_list_items_includes_done():
+    t = TodoList()
+    t.add("a"); t.add("b")
+    t.complete("a")
+    assert t.list_items() == ["a", "b"]
+
+
+def test_complete_not_found_raises():
+    t = TodoList()
+    with pytest.raises(ValueError):
+        t.complete("z")
+
+
+# --- cycle 3 ---
+
+def test_remove_item():
+    t = TodoList()
+    t.add("a"); t.add("b")
+    t.remove("a")
+    assert t.list_items() == ["b"]
+
+
+def test_remove_not_found_raises():
+    t = TodoList()
+    t.add("a")
+    with pytest.raises(ValueError):
+        t.remove("z")
+
+
+# --- cycle 4 ---
+
+def test_priority_order():
+    t = TodoList()
+    t.add("lo", priority=0)
+    t.add("hi", priority=1)
+    assert t.list_items()[0] == "hi"
+
+
+def test_default_priority_compat():
+    t = TodoList()
+    t.add("x")
+    assert t.list_items() == ["x"]
+
+
+def test_equal_priority_insertion_order():
+    t = TodoList()
+    t.add("a", priority=1)
+    t.add("b", priority=1)
+    assert t.list_items() == ["a", "b"]

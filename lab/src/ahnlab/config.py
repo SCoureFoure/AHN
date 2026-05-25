@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 LAB_ROOT = Path(__file__).resolve().parents[2]
+SUBJECTS_ROOT = Path(os.getenv("AHNLAB_SUBJECTS_ROOT", LAB_ROOT.parent / "subjects"))
 DB_PATH = Path(os.getenv("AHNLAB_DB_PATH", LAB_ROOT / "runs" / "ahnlab.duckdb"))
 RUNS_DIR = Path(os.getenv("AHNLAB_RUNS_DIR", LAB_ROOT / "runs"))
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")

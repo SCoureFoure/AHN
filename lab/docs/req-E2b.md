@@ -1,8 +1,13 @@
-# E3 Requirements — C_partial_warn Mechanism + B_partial Inversion Replication
+# E2b/E2c Requirements — C_partial_warn Mechanism + B_partial Inversion Replication
 
-**Experiment ID:** E3  
-**Status:** Draft — pending subject validation  
+**Experiment IDs:** E2b (group_by_prefix), E2c (invert_index)  
+**E2 family:** E2, E2b, E2c all probe contract completeness effects. E2b and E2c were originally numbered E3/E3b but renamed after re-reading lab intent — the original E3 question (multi-cycle regression) is distinct from this E2 completeness extension.  
+**Status:** Completed — subject validation failed for both E2b and E2c  
 **Depends on:** E2 findings (`lab/docs/findings-E2.md`)
+
+## Outcome note
+
+Both subjects (group_by_prefix, invert_index) failed the A_zero ≤ 0.65 validation criterion — Haiku 4.5 produced A_zero = 1.000 on both. The wrong-default assumption was incorrect for this model/task combination. E2b did replicate the B_partial inversion (1.000 → 0.778) even with correct defaults, which is a real signal. E2c was fully flat (all arms 1.000). Neither subject was valid for RQ1. Held for possible revisit with a different subject class.
 
 ---
 

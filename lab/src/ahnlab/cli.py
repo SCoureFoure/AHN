@@ -34,12 +34,12 @@ def cmd_run(args: argparse.Namespace) -> int:
         return 2
     spec_fn, paths_fn = REGISTRY[args.experiment]
     spec = spec_fn(trials_per_arm=args.trials, model=args.model) if args.model else spec_fn(trials_per_arm=args.trials)
-    subjects_root, hidden_root = paths_fn()
+    subjects_root = paths_fn()
 
     ensure_dirs()
     store = Store()
     try:
-        execute(spec, subjects_root, hidden_root, store)
+        execute(spec, subjects_root, store)
     finally:
         store.close()
 
